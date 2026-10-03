@@ -68,8 +68,8 @@ Riferimento: origine nello spigolo delle pareti, a livello del pavimento. X lung
 | 07 | Sportello curvo con feritoie | 144 × 188 × 194 | sabbia | capovolto, in piedi |
 | 08 | Serbatoio estraibile (~1,6 L) | 158 × 177 × 113 | qualsiasi | diritto |
 | 09 | Coperchio serbatoio | 158 × 177 × 9 | qualsiasi | capovolto |
-| 10 | Box elettronica stagno | 90 × 52 × 48 | antracite | sul dorso |
-| 11 | Coperchio box | 90 × 52 × 3 | antracite | piatto |
+| 10 | Box elettronica stagno | 52 × 90 × 48 | antracite | sul dorso (apertura in alto) |
+| 11 | Coperchio box | 52 × 90 × 3 | antracite | piatto |
 
 Gli STL in `stl/print/` sono già orientati e appoggiati sul piatto. Vasca e corpo occupano fino a
 250 mm sul piatto da 256 mm della P2S: centrali bene.

@@ -532,8 +532,8 @@ PARTS = [
     ("07_sportello", sportello, "sabbia", "flip", 1),
     ("08_serbatoio", serbatoio, "grigio", "up", 1),
     ("09_coperchio_serbatoio", coperchio_serbatoio, "grigio", "flip", 1),
-    ("10_box_elettronica", box_elettronica, "antracite", ("rot", "x", 90), 1),
-    ("11_coperchio_box", coperchio_box, "antracite", ("rot", "x", 90), 1),
+    ("10_box_elettronica", box_elettronica, "antracite", ("rot", "y", -90), 1),
+    ("11_coperchio_box", coperchio_box, "antracite", ("rot", "y", -90), 1),
 ]
 
 

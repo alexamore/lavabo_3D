@@ -123,9 +123,9 @@
   "watertight": true,
   "volume_cm3": 53.3,
   "print_size_mm": [
-   48.0,
    52.0,
-   90.0
+   90.0,
+   48.0
   ],
   "fits_250": true
  },
@@ -136,9 +136,9 @@
   "watertight": true,
   "volume_cm3": 13.9,
   "print_size_mm": [
-   3.0,
    52.0,
-   90.0
+   90.0,
+   3.0
   ],
   "fits_250": true
  }
