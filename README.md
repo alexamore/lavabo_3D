@@ -3,8 +3,11 @@
 ![Vista ambientata](docs/img/ambient.png)
 
 Piccola fontanella da esterno da fissare nell'angolo interno di due pareti in mattoni. Serve solo a
-riempire bottiglie. La pianta ha **esattamente tre lati**: **250 mm** lungo la parete A, **200 mm**
-lungo la parete B (entrambi partono dall'angolo) e un bordo frontale curvo e affusolato.
+riempire bottiglie. La pianta ha **esattamente tre lati**: **250 mm** lungo la parete B, la parete
+lunga su cui si fissa la fontana; **200 mm** lungo la parete A, la parete corta. Entrambi partono
+dall'angolo e sono chiusi da un bordo frontale curvo e affusolato.
+Il tubo PPR **esce già dal muro** della parete da 25 cm, con il centro **a 95 mm dall'angolo**
+(l'angolo è a sinistra guardando la parete). Non c'è nessun tubo che arriva dal basso.
 Sotto il piano c'è un vano tecnico con serbatoio estraibile, pompa sommersa 12 V, galleggianti e un
 box stagno per l'ESP32.
 
@@ -28,51 +31,48 @@ la tenuta stagna delle mesh e le interferenze tra i pezzi e con il tubo PPR.
 
 ## 1. Geometria e quote
 
-Riferimento: origine nello spigolo delle pareti, a livello del pavimento. X lungo la parete A,
-Y lungo la parete B, Z verso l'alto.
+Riferimento: origine nello spigolo delle pareti, a livello del pavimento. X lungo la parete A
+(corta, 20 cm), Y lungo la parete B (lunga, 25 cm, fontana), Z verso l'alto.
 
 | Elemento | Quota |
 |---|---|
-| Pianta | 250 (parete A) × 200 (parete B), bordo frontale a quarto d'ellisse |
+| Pianta | 250 (parete B, fontana) × 200 (parete A), bordo frontale a quarto d'ellisse |
 | Piano vasca (bordo) | **+840** dal pavimento |
 | Piano griglia (appoggio bottiglia) | +836 |
 | Uscita beccuccio | **+1150** (luce libera 314 mm sopra la griglia: entra una bottiglia da 1,5 L in piedi) |
-| Asse beccuccio | 95 mm da entrambe le pareti, cioè vicino all'angolo |
+| Asse tubo e beccuccio | **95 mm dall'angolo** lungo la parete da 25 cm; beccuccio a 100 mm dal muro |
+| Uscita del tubo dal muro | +900 (**valore provvisorio, da misurare**; il modello accetta da +855 a +1130) |
 | Sommità testa | +1218 |
-| Vano tecnico | da +570 a +770 |
-| Copritubo d'angolo (opzionale) | da 0 a +570, 3 moduli |
+| Vano tecnico | da +570 a +770 (appeso al muro, sotto non c'è altro) |
 
 **Vincoli rispettati**
 - La vasca aderisce alle due pareti. I due lati rettilinei partono dallo stesso spigolo e non c'è spazio tra lavabo e angolo.
-- La pianta ha 3 lati: 250 + 200 + bordo curvo.
-- Il beccuccio è vicino allo stesso angolo, non al centro dello schienale.
+- La pianta ha 3 lati: 250 (parete della fontana) + 200 + bordo curvo.
+- La fontana è fissata sul lato da 25 cm, con il beccuccio in asse al tubo, a 95 mm dall'angolo.
 - Nessun pezzo stampato supera 250 mm in X, Y o Z.
-- Lo schienale (colonna d'angolo cava + ali a onda) nasconde tutta la salita PPR, comprese le due curve.
+- Lo schienale sulla parete da 25 cm ha una colonnina sopra il tubo e profilo a onda. Nasconde
+  l'uscita dal muro, la salita e le due curve. Sulla parete da 20 cm c'è solo un'alzatina paraspruzzi di 4 cm.
 
-> **Angolo tra le pareti.** Il modello assume pareti a **90°**: lo dicono il testo e la foto, e lo
-> conferma lo schizzo SketchUp, dove gli assi rosso e verde sono ortogonali. Se l'angolo reale fosse
-> diverso (per esempio 45° come accennato), va adattato `cad/fontanella.py`: la pianta usa il primo
-> quadrante.
+> Pareti assunte a **90°**.
 
 ## 2. Pezzi da stampare
 
 | # | Pezzo | Ingombro di stampa (mm) | Colore | Orientamento |
 |---|---|---|---|---|
-| 01 | Vasca (piano, bordo affusolato, sede griglia, imbuto) | 250 × 200 × 74 | sabbia | diritta |
-| 02 | Griglia removibile | 212 × 164 × 8 | antracite | piatta |
-| 03 | Schienale (ali a onda + colonna cava) | 242 × 192 × 200 | sabbia | diritto |
-| 04 | Testa con beccuccio | 118 × 118 × 178 | sabbia | **capovolta** (faccia superiore piatta sul piatto) |
-| 05 | Listello di chiusura a L (sotto il braccio) | 67 × 67 × 138 | sabbia | capovolto |
-| 06 | Corpo vano tecnico | 238 × 188 × 206 | sabbia | diritto |
-| 07 | Sportello curvo con feritoie | 195 × 131 × 194 | sabbia | capovolto, in piedi |
-| 08 | Serbatoio estraibile (~1,4 L) | 152 × 150 × 113 | qualsiasi | diritto |
-| 09 | Coperchio serbatoio | 152 × 150 × 9 | qualsiasi | capovolto |
-| 10 | Box elettronica stagno | 100 × 52 × 48 | antracite | sul dorso |
-| 11 | Coperchio box | 100 × 52 × 3 | antracite | piatto |
-| 12–14 | Copritubo d'angolo (opzionale) | 65 × 65 × 198 | sabbia | diritti |
+| 01 | Vasca (piano, bordo affusolato, sede griglia, imbuto) | 200 × 250 × 74 | sabbia | diritta |
+| 02 | Griglia removibile | 164 × 220 × 8 | antracite | piatta |
+| 03 | Schienale (onda + colonnina sul tubo + alzatina) | 192 × 242 × 200 | sabbia | diritto |
+| 04 | Testa con beccuccio | 127 × 52 × 178 | sabbia | **capovolta** (faccia superiore piatta sul piatto) |
+| 05 | Listello di chiusura a L (sotto il braccio) | 52 × 37 × 138 | sabbia | capovolto |
+| 06 | Corpo vano tecnico | 188 × 238 × 206 | sabbia | diritto |
+| 07 | Sportello curvo con feritoie | 144 × 188 × 194 | sabbia | capovolto, in piedi |
+| 08 | Serbatoio estraibile (~1,6 L) | 158 × 177 × 113 | qualsiasi | diritto |
+| 09 | Coperchio serbatoio | 158 × 177 × 9 | qualsiasi | capovolto |
+| 10 | Box elettronica stagno | 90 × 52 × 48 | antracite | sul dorso |
+| 11 | Coperchio box | 90 × 52 × 3 | antracite | piatto |
 
-Gli STL in `stl/print/` sono già orientati e appoggiati sul piatto. La vasca occupa 250 mm sul piatto
-da 256 mm della P2S: centrala bene e usa un brim solo sui lati corti.
+Gli STL in `stl/print/` sono già orientati e appoggiati sul piatto. Vasca e corpo occupano fino a
+250 mm sul piatto da 256 mm della P2S: centrali bene.
 
 **Impostazioni consigliate per l'ASA su P2S**
 - Ugello 0,4, layer 0,2 (0,16 per testa e listello), camera chiusa, piatto a 100 °C, ugello 255–265 °C.
@@ -86,8 +86,8 @@ da 256 mm della P2S: centrala bene e usa un brim solo sui lati corti.
 ## 3. Materiali da acquistare
 
 **Idraulica** (acqua potabile: solo tubo e raccordi certificati, nessun canale stampato)
-- Tubo PPR DN20 PN20 per la salita e il braccio, circa 1 m.
-- 1 gomito PPR 20 a 90° in cima alla salita.
+- Tubo PPR DN20 PN20 per la salita e il braccio, circa 0,5 m.
+- 2 gomiti PPR 20 a 90°: uno all'uscita dal muro (verso l'alto), uno in cima alla salita.
 - 1 gomito PPR 20 × ½" F, cioè con filetto femmina in ottone: è il terminale del beccuccio, rivolto verso il basso.
 - 1 rompigetto o anticalcare con adattatore ½" M → M24 (o M22), da avvitare nel raccordo femmina.
 - Raccordi di collegamento al miscelatore esistente.
@@ -98,7 +98,7 @@ da 256 mm della P2S: centrala bene e usa un brim solo sui lati corti.
 - 2 inserti a caldo M3 + 2 viti M3×10 svasate: listello sotto il braccio.
 - 4 inserti a caldo M3 + 4 viti M3×10: coperchio del box.
 - 2 perni inox Ø4×18: giunto testa/schienale.
-- 6 viti 5×60 con tasselli da 8 mm per i mattoni (corpo a muro) + 2 viti 4,5×60 con tasselli da 6 (box + corpo a muro).
+- 6 viti 5×60 con tasselli da 8 mm per i mattoni (corpo a muro) + 2 viti 4,5×60 con tasselli da 6 (box + corpo sulla parete da 25 cm).
 - 2 magneti al neodimio 6×3 nello sportello + 2 nella vasca, sotto.
 - Silicone neutro per esterni e striscia EPDM adesiva 3×6 per il coperchio del box.
 
@@ -113,17 +113,16 @@ da 256 mm della P2S: centrala bene e usa un brim solo sui lati corti.
 
 ## 4. Sequenza di montaggio
 
-1. **Tracciamento.** Segna l'angolo e le quote +570 (fondo del vano) e +840 (piano). Controlla la squadra delle pareti.
-2. **Tubo PPR.** Porta la salita PPR nell'angolo, con l'asse a 24 mm da ciascuna parete. A **+1190** salda il gomito a 90° orientato sulla bisettrice. Aggiungi circa 70 mm di tubo orizzontale e il gomito 20 × ½" F rivolto verso il basso, con l'asse a 95/95 mm dalle pareti. La faccia del raccordo deve stare a circa +1154. Fai la prova di pressione **prima** di rivestire.
-3. **Copritubo (opzionale).** Impila i 3 moduli intorno al tubo. Accorcia quello in basso se serve, e apri una finestra dove entra il tubo dal miscelatore.
-4. **Corpo.** Infilalo in diagonale, con il tubo che entra nel cavedio aperto sul retro, e abbassalo sull'innesto del copritubo. Mettilo in bolla e fissalo con 6 viti nei mattoni.
-5. **Box elettronica.** Fissalo all'interno della parete A con 2 viti passanti nel corpo e nel muro, sigillando i fori. Passa i cavi nei pressacavi sul fondo.
-6. **Vasca + schienale.** Uniscili al banco con 4 viti M4 da sotto e un cordolo di silicone sulla cresta anti-infiltrazione. Infila il gruppo in diagonale sotto il braccio del beccuccio, abbassalo sull'anello di centraggio del corpo e fissalo con 4 viti M4 dalle linguette interne.
-7. **Testa.** Calala **dall'alto** sul tubo: colonna, braccio e canna di uscita sono aperti in basso. Centrala sui 2 perni Ø4.
-8. **Listello a L.** Chiude la feritoia della colonna e il canale sotto il braccio. Si fissa con 2 viti M3 e blocca la testa sul tubo, così non si può sfilare verso l'alto.
-9. **Rompigetto.** Avvitalo nel raccordo femmina ½".
-10. **Silicone.** Stendi un cordolo neutro tra schienale e mattoni e lungo i bordi della vasca contro le pareti.
-11. **Vano tecnico.** Inserisci il serbatoio con pompa e galleggianti. Mandata e cavi escono dalla tacca sul retro e passano nel cavedio attraverso i due fori della parete curva. Poi monta griglia e sportello: aggancio in basso, magneti in alto.
+1. **Tracciamento.** Segna l'angolo, l'asse del tubo (95 mm dall'angolo sulla parete da 25 cm) e le quote +570 (fondo del vano) e +840 (piano). Controlla la squadra delle pareti.
+2. **Tubo PPR.** Il tubo esce dal muro a +900 (da adattare alla quota reale). Salda subito un gomito a 90° verso l'alto, con la salita a 22 mm dal muro. A **+1190** salda il gomito a 90° rivolto verso l'esterno, poi circa 55 mm di tubo orizzontale e il gomito 20 × ½" F rivolto verso il basso, con l'asse a 100 mm dal muro. La faccia del raccordo deve stare a circa +1154. Fai la prova di pressione **prima** di rivestire.
+3. **Corpo.** Appoggialo all'angolo sotto il tubo, mettilo in bolla e fissalo con 6 viti nei mattoni, 3 per parete.
+4. **Box elettronica.** Fissalo all'interno della parete da 25 cm con 2 viti passanti nel corpo e nel muro, sigillando i fori. I cavi passano nei pressacavi sul fondo del box. Mandata della pompa e cavo 12 V escono dai due fori nel fondo del vano, vicino all'angolo.
+5. **Vasca + schienale.** Uniscili al banco con 3 viti M4 da sotto e un cordolo di silicone sulla cresta anti-infiltrazione. Avvicina il gruppo al muro: il tubo entra nel cavedio della colonnina, aperto verso il muro. Abbassalo sull'anello di centraggio del corpo e fissalo con 4 viti M4 dalle linguette interne.
+6. **Testa.** Calala **dall'alto** sul tubo: colonnina, braccio e canna di uscita sono aperti in basso. Centrala sui 2 perni Ø4.
+7. **Listello a L.** Chiude la feritoia della colonnina e il canale sotto il braccio. Si fissa con 2 viti M3 e blocca la testa sul tubo, così non si può sfilare verso l'alto.
+8. **Rompigetto.** Avvitalo nel raccordo femmina ½".
+9. **Silicone.** Stendi un cordolo neutro tra schienale, alzatina e mattoni.
+10. **Vano tecnico.** Inserisci il serbatoio con pompa e galleggianti, poi monta griglia e sportello: aggancio in basso, magneti in alto.
 
 **Manutenzione.** Togli lo sportello, sfila il serbatoio in diagonale (sopra ci sono 3 mm di soglia) e
 puliscilo. La griglia si solleva con la tacca frontale e scopre l'imbuto per la pulizia.
@@ -163,13 +162,16 @@ Parametri utili in `cad/params.py`:
 - `Z_TOP`: altezza del piano.
 - `A`, `B`: lati della pianta.
 - `ARC_N`: forma del bordo frontale (2 = quarto d'ellisse, valori più alti = più "pieno").
+- `PIPE_Y`: distanza del tubo dall'angolo (95).
+- `Z_PIPE_IN`: quota di uscita del tubo dal muro.
 - `SPOUT`: posizione del beccuccio.
-- `T_W`: spessore delle ali.
+- `T_W`, `T_S`, `UPSTAND_H`: spessori dello schienale, spessore e altezza dell'alzatina.
 - `DOOR_A1` / `DOOR_A2`: apertura dello sportello.
 - `TANK_*`: dimensioni del serbatoio.
 
 ## 7. Note e verifiche prima della realizzazione
 
+- **Misura la quota a cui il tubo esce dal muro** e impostala in `Z_PIPE_IN`. Il modello copre da +855 a +1130. Se il tubo esce sotto il piano (+840), la vasca va forata e ripensata in quel punto.
 - Verifica le misure reali dei raccordi PPR che compri. Il canale nella testa ha luce Ø38–39 mm e accoglie gomiti fino a circa Ø34.
 - Il fissaggio è pensato per mattoni pieni o semipieni. Con altri supporti cambia i tasselli.
 - L'impianto elettrico è **solo 12 V SELV**. L'alimentatore a 230 V va in casa o su una presa protetta da differenziale.

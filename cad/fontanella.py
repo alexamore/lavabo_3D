@@ -35,8 +35,9 @@ F = Polygon([(0, 0)] + ARC.tolist())                        # pianta a tre lati
 Q = quadrant()
 F_IN = F.difference(ARC_LINE.buffer(NOSE_SET, quad_segs=16))  # corpo arretrato
 F_IN = max(F_IN.geoms, key=lambda g: g.area) if F_IN.geom_type == "MultiPolygon" else F_IN
-CHASE = disc((0, 0), R_CH).intersection(Q)                 # cavedio tubo
-COLUMN = disc((0, 0), R_C).intersection(Q)
+# colonnina dello schienale sopra l'uscita del tubo (aperta verso il muro)
+COLUMN = box(0, PIPE_Y - COL_HW, RISER[0], PIPE_Y + COL_HW).union(disc(RISER, COL_HW))
+CHASE = box(-1, PIPE_Y - CH_HW, RISER[0], PIPE_Y + CH_HW).union(disc(RISER, CH_HW))
 
 
 def front_arc_of(poly):
@@ -47,18 +48,17 @@ def front_arc_of(poly):
 
 # Interno vasca (zona bagnata) ------------------------------------------------
 _I = F.difference(ARC_LINE.buffer(RIM_W))
-_I = _I.intersection(box(T_W, T_W, 2000, 2000)).difference(disc((0, 0), R_C + 0.01))
+_I = _I.intersection(box(T_W, T_S, 2000, 2000)).difference(COLUMN.buffer(0.01))
 _I = _I.buffer(8, join_style=1).buffer(-14, join_style=1).buffer(6, join_style=1)
 I_BASIN = max(polys(_I), key=lambda g: g.area)
 I_FUNNEL = I_BASIN.buffer(-LEDGE, join_style=1)
-DRAIN = (90.0, 88.0)
+DRAIN = SPOUT
 
 # Corpo: interno e anello di centraggio --------------------------------------
-CI = F_IN.buffer(-WALL, join_style=2).difference(COLUMN)
+CI = F_IN.buffer(-WALL, join_style=2)
 DOOR_WEDGE = wedge(DOOR_A1, DOOR_A2)
 LIP = CI.buffer(2.5, join_style=2).difference(CI).intersection(F_IN.buffer(-0.01))  # meta' interna della parete
 LIP = LIP.difference(DOOR_WEDGE.buffer(1.0))
-LIP = LIP.difference(disc((0, 0), R_C + 3))
 
 # Viti corpo -> vasca (4 linguette) ------------------------------------------
 def _in_point(angle_deg, inset):
@@ -84,8 +84,8 @@ TABS = [  # (centro vite, punto d'attacco alla parete)
 Z_TAB = (756.0, 764.0)
 
 # Viti schienale -> vasca ----------------------------------------------------
-BS_SCREWS = [(115.0, 13.5), (205.0, 13.5), (13.5, 110.0), (13.5, 165.0)]
-HEAD_PINS = [(61.5 * math.cos(math.radians(a)), 61.5 * math.sin(math.radians(a))) for a in (22, 68)]
+BS_SCREWS = [(13.5, 38.0), (13.5, 160.0), (13.5, 222.0)]
+HEAD_PINS = [(9.0, PIPE_Y - (CH_HW + COL_HW) / 2), (9.0, PIPE_Y + (CH_HW + COL_HW) / 2)]
 
 # Magneti sportello -----------------------------------------------------------
 MAG_ANG = [DOOR_A1 + 9.0, DOOR_A2 - 9.0]
@@ -116,8 +116,8 @@ def vasca():
     skirt = prism(F_IN, Z_VASCA_BOT, Z_TOP - 14.0 - NOSE_SET + 0.5)
     body = nose + skirt
     # cresta anti-infiltrazione sotto lo schienale
-    ridge = union([prism(box(R_C + 4, 4, A - 30, 7), Z_TOP - 0.5, Z_TOP + 4),
-                   prism(box(4, R_C + 4, 7, B - 30), Z_TOP - 0.5, Z_TOP + 4)])
+    ridge = union([prism(box(4, 4, A - 30, 7), Z_TOP - 0.5, Z_TOP + 4),
+                   prism(box(4, 4, 7, B - 30), Z_TOP - 0.5, Z_TOP + 4)])
     body = body + ridge
 
     cuts = []
@@ -129,12 +129,10 @@ def vasca():
                    lambda X, Y: np.full_like(X, Z_GRID_TOP - GRID_T + 0.5), funnel_floor)
     cuts.append(fun ^ prism(I_FUNNEL, 700, 900))
     # tacca per le dita (estrazione griglia)
-    fp = I_BASIN.exterior.interpolate(I_BASIN.exterior.project(Point(175, 150)))
+    fp = I_BASIN.exterior.interpolate(I_BASIN.exterior.project(Point(A * 0.8, B * 0.8)))
     cuts.append(cyl((fp.x, fp.y), 11, Z_GRID_TOP - GRID_T + 2, Z_TOP + 5))
     # scarico
     cuts.append(cyl(DRAIN, DRAIN_D / 2, Z_VASCA_BOT - 5, Z_DRAIN + 2))
-    # cavedio tubo
-    cuts.append(prism(CHASE, Z_VASCA_BOT - 5, Z_TOP + 10))
     # scanalatura di centraggio sul corpo
     cuts.append(prism(LIP.buffer(0.35, join_style=2), Z_VASCA_BOT - 1, Z_VASCA_BOT + LIP_H + 0.6))
     # inserti M4 viti dal corpo
@@ -167,10 +165,10 @@ def griglia():
     z0, z1 = Z_GRID_TOP - GRID_T, Z_GRID_TOP
     plate = prism(g, z0, z1)
     inner = g.buffer(-7, join_style=1)
-    # asole parallele alla bisettrice (direzione dell'utente), passo 9 mm
+    # asole perpendicolari alla parete della fontana, passo 9 mm
     from shapely.ops import unary_union
-    e = np.array([1, 1]) / math.sqrt(2)
-    nrm = np.array([1, -1]) / math.sqrt(2)
+    e = np.array([1.0, 0.0])      # asole perpendicolari alla parete della fontana
+    nrm = np.array([0.0, 1.0])
     slots = []
     for k in range(-30, 31):
         p0 = -400 * e + k * 9.0 * nrm
@@ -181,7 +179,7 @@ def griglia():
     sl = unary_union(slots)
     # due nervature trasversali di irrigidimento
     ribs = unary_union([LineString([tuple(c * e - 400 * nrm), tuple(c * e + 400 * nrm)]).buffer(2.5)
-                        for c in (115.0, 170.0)])
+                        for c in (80.0, 135.0)])
     sl = sl.difference(ribs)
     return plate - prism(sl, z0 - 1, z1 + 1)
 
@@ -190,11 +188,11 @@ def griglia():
 # 03 SCHIENALE (ali aderenti alle pareti + colonna d'angolo cava)
 # ---------------------------------------------------------------------------
 def bs_footprint():
-    bands = union_geo([box(0, 0, A, T_W), box(0, 0, T_W, B), COLUMN])
-    # raccordo concavo tra colonna e ali
-    bands = bands.buffer(10, join_style=1).buffer(-10, join_style=1).intersection(Q)
+    """Schienale sulla parete B (lunga) con colonnina sul tubo + alzatina sulla parete A."""
+    g = union_geo([box(0, 0, T_W, B), box(0, 0, A, T_S), COLUMN])
+    g = g.buffer(10, join_style=1).buffer(-10, join_style=1).intersection(Q)  # raccordi concavi
     lim = F.difference(ARC_LINE.buffer(NOSE_R + 2))
-    return bands.intersection(lim)
+    return g.intersection(lim)
 
 
 def union_geo(gs):
@@ -203,11 +201,16 @@ def union_geo(gs):
 
 
 def bs_height(X, Y):
-    s = np.maximum(X, Y)
-    L = np.where(X >= Y, A - NOSE_R - 2, B - NOSE_R - 2)
-    q = np.clip((s - R_C) / (L - R_C), 0, 1)
-    f = (1 - q) ** 2.6          # profilo concavo 'a onda' che scende dalla colonna
-    return Z_TOP + BS_TAIL_H + (Z_BS_TOP - Z_TOP - BS_TAIL_H) * f
+    """Profilo a onda: massimo sulla colonnina del tubo, scende verso l'angolo e verso
+    l'estremita' della parete B; alzatina costante sulla parete A."""
+    s = np.abs(Y - PIPE_Y)
+    far = Y > PIPE_Y
+    L = np.where(far, (B - NOSE_R - 2) - PIPE_Y, PIPE_Y)
+    tail = np.where(far, BS_TAIL_H, UPSTAND_H)
+    q = np.clip((s - COL_HW) / (L - COL_HW), 0, 1)
+    f = (1 - q) ** 2.6
+    hB = Z_TOP + tail + (Z_BS_TOP - Z_TOP - tail) * f
+    return np.where(X <= COLUMN.bounds[2] + 2, hB, Z_TOP + UPSTAND_H)
 
 
 def schienale():
@@ -218,17 +221,17 @@ def schienale():
     def top(X, Y):
         h = bs_height(X, Y)
         d = dist_to(free, X, Y)
-        s = np.maximum(X, Y)
-        w = np.clip((s - R_C) / 20.0, 0, 1)
+        s = np.where(X <= COLUMN.bounds[2] + 2, np.abs(Y - PIPE_Y), 999.0)
+        w = np.clip((s - COL_HW) / 20.0, 0, 1)
         w = w * w * (3 - 2 * w)
         return h - w * bullnose(d, 9.0)
 
     body = sandwich((b[0] - 1, b[1] - 1, b[2] + 1, b[3] + 1), 0.5, top,
                     lambda X, Y: np.full_like(X, Z_TOP)) ^ prism(fp, Z_TOP - 1, Z_BS_TOP + 5)
-    cuts = [prism(CHASE, Z_TOP - 5, Z_BS_TOP + 5)]
+    cuts = [prism(CHASE, Z_TOP + 3, Z_BS_TOP + 5)]   # cavedio del tubo, aperto verso il muro
     # scanalatura per la cresta della vasca
-    cuts.append(union([prism(box(R_C + 3.6, 3.6, A - 29.6, 7.4), Z_TOP - 1, Z_TOP + 4.5),
-                       prism(box(3.6, R_C + 3.6, 7.4, B - 29.6), Z_TOP - 1, Z_TOP + 4.5)]))
+    cuts.append(union([prism(box(3.6, 3.6, A - 29.6, 7.4), Z_TOP - 1, Z_TOP + 4.5),
+                       prism(box(3.6, 3.6, 7.4, B - 29.6), Z_TOP - 1, Z_TOP + 4.5)]))
     for c in BS_SCREWS:
         cuts.append(cyl(c, INSERT_M4 / 2, Z_TOP - 1, Z_TOP + 9))
     for p in HEAD_PINS:
@@ -285,7 +288,7 @@ def testa():
 def strip_screws():
     u = (ARM_P1 - ARM_P0) / np.linalg.norm(ARM_P1 - ARM_P0)
     n = np.array([-u[1], u[0]])
-    return [tuple(ARM_P0 + u * 42.0 + n * 15.5), tuple(ARM_P0 + u * 62.0 - n * 15.5)]
+    return [tuple(ARM_P0 + u * 33.0 + n * 15.5), tuple(ARM_P0 + u * 47.0 - n * 15.5)]
 
 
 def copertura_braccio():
@@ -300,12 +303,13 @@ def copertura_braccio():
     rect = Polygon([tuple(a + n * hw), tuple(b + n * hw), tuple(b - n * hw), tuple(a - n * hw)])
     ztop = Z_ARM - 11.2
     outer = cyl_along((*ARM_P0, Z_ARM), (*ARM_P1, Z_ARM), ARM_R)
-    horiz = (outer ^ prism(rect, Z_ARM - 30, ztop)) - prism(disc((0, 0), R_C - 3), 0, 2000)
-    ring = COLUMN.difference(disc((0, 0), R_CH + 0.3)).intersection(rect)
-    vert = prism(ring, Z_BS_TOP + 0.4, Z_ARM - 16.0)
+    xf = COLUMN.bounds[2]
+    horiz = (outer ^ prism(rect, Z_ARM - 30, ztop)) - prism(box(-10, -1000, xf - 3, 1000), 0, 2000)
+    ring = COLUMN.difference(CHASE.buffer(0.3)).intersection(rect)
+    vert = prism(ring, Z_BS_TOP + 0.4, ztop)
     strip = (horiz + vert) - cyl(SPOUT, SPOUT_RI + 0.3, Z_OUTLET - 5, Z_HEAD_TOP)
     # ribasso sotto il gomito femmina (diametro ~30 mm)
-    tc = 72.0
+    tc = 52.0
     c0, c1 = ARM_P0 + u * tc, ARM_P0 + u * 200
     endr = Polygon([tuple(c0 + n * 30), tuple(c1 + n * 30), tuple(c1 - n * 30), tuple(c0 - n * 30)])
     strip = strip - prism(endr, Z_ARM - 16.0, Z_ARM)
@@ -333,36 +337,31 @@ def tank_poly(inset=0.0, r=12.0):
     return affinity.rotate(p, TANK_PHI, origin=(0, 0))
 
 
-SERVICE_HOLES = [  # (angolo sulla parete del cavedio, diametro): tubo pompa, cavo 12 V
-    (32.0, 15.0), (62.0, 12.0)]
-WALL_SCREWS_A = [(90.0, 605.0), (90.0, 735.0), (232.0, 605.0)]
-WALL_SCREWS_B = [(100.0, 605.0), (100.0, 735.0), (172.0, 605.0)]
-BOX_SCREWS = [(130.0, 736.0), (190.0, 736.0)]
+SERVICE_HOLES = [((22.0, 40.0), 15.0), ((22.0, 70.0), 12.0)]  # nel fondo: mandata pompa, cavo 12 V
+WALL_SCREWS_A = [(60.0, 605.0), (60.0, 735.0), (160.0, 605.0)]   # (x, z) sulla parete A
+WALL_SCREWS_B = [(60.0, 605.0), (60.0, 735.0), (225.0, 605.0)]   # (y, z) sulla parete B
+BOX_SCREWS = [(135.0, 736.0), (185.0, 736.0)]                    # (y, z) box -> parete B
 
 
 def corpo():
     z0, z1 = Z_CORPO_BOT, Z_VASCA_BOT
     outer = prism(F_IN, z0, z1)
-    cuts = [prism(CI, z0 + FLOOR, z1 + 1), prism(CHASE, z0 - 1, z1 + 1)]
+    cuts = [prism(CI, z0 + FLOOR, z1 + 1)]
     # apertura sportello (aperta in alto: chiusa dalla vasca)
     band = front_arc_of(F_IN).buffer(WALL + 3)
     cuts.append(prism(band.intersection(DOOR_WEDGE), Z_DOOR_BOT, z1 + 1))
     # fori di scarico del fondo
-    for (x, y) in [(120, 60), (150, 90), (90, 130), (170, 40), (60, 160), (200, 70)]:
+    for (x, y) in [(60, 30), (95, 60), (130, 40), (60, 130), (100, 160), (45, 200)]:
         cuts.append(cyl((x, y), 3.5, z0 - 1, z0 + FLOOR + 1, 24))
-    # passaggi servizi nella parete del cavedio
-    for ang, dd in SERVICE_HOLES:
-        r = (R_CH + R_C) / 2
-        c = (r * math.cos(math.radians(ang)), r * math.sin(math.radians(ang)), z0 + FLOOR + 14)
-        cuts.append(cyl_along((c[0] - 12 * math.cos(math.radians(ang)), c[1] - 12 * math.sin(math.radians(ang)), c[2]),
-                              (c[0] + 12 * math.cos(math.radians(ang)), c[1] + 12 * math.sin(math.radians(ang)), c[2]),
-                              dd / 2, 32))
+    # passaggi servizi nel fondo, vicino all'angolo (mandata pompa, cavo 12 V)
+    for c, dd in SERVICE_HOLES:
+        cuts.append(cyl(c, dd / 2, z0 - 1, z0 + FLOOR + 1, 32))
     # viti a muro (svasate, testa interna)
-    for x, z in WALL_SCREWS_A + BOX_SCREWS:
-        d = 5.2 if (x, z) in BOX_SCREWS else 6.5
-        cuts.append(cyl_along((x, -1, z), (x, WALL + 1, z), d / 2, 32))
-        if (x, z) not in BOX_SCREWS:
-            cuts.append(Manifold.cylinder(3.5, d / 2, 6.6, 32).rotate([-90, 0, 0]).translate([x, WALL - 3.5, z]))
+    for x, z in WALL_SCREWS_A:
+        cuts.append(cyl_along((x, -1, z), (x, WALL + 1, z), 3.25, 32))
+        cuts.append(Manifold.cylinder(3.5, 3.25, 6.6, 32).rotate([-90, 0, 0]).translate([x, WALL - 3.5, z]))
+    for y, z in BOX_SCREWS:
+        cuts.append(cyl_along((-1, y, z), (WALL + 1, y, z), 2.6, 32))
     for y, z in WALL_SCREWS_B:
         cuts.append(cyl_along((-1, y, z), (WALL + 1, y, z), 3.25, 32))
         cuts.append(Manifold.cylinder(3.5, 3.25, 6.6, 32).rotate([0, 90, 0]).translate([WALL - 3.5, y, z]))
@@ -464,8 +463,17 @@ def coperchio_serbatoio():
 # ---------------------------------------------------------------------------
 # 09 BOX ELETTRONICA stagno + 10 coperchio
 # ---------------------------------------------------------------------------
+def _to_wall_b(m):
+    """Il box e' modellato come se fosse sulla parete A (y=0) e poi specchiato sulla parete B."""
+    return m.mirror([1, -1, 0])
+
+
 def box_elettronica():
-    x0, x1 = BOX_X; y0, y1 = BOX_Y; z0, z1 = BOX_Z
+    return _to_wall_b(_box_local())
+
+
+def _box_local():
+    x0, x1 = BOX_ALONG; y0, y1 = BOX_DEPTH; z0, z1 = BOX_Z
     W = 2.5
     outer = Manifold.cube([x1 - x0, y1 - y0, z1 - z0]).translate([x0, y0, z0])
     inner = Manifold.cube([x1 - x0 - 2 * W, y1 - y0 - W + 1, z1 - z0 - 2 * W]).translate([x0 + W, y0 + W, z0 + W])
@@ -497,32 +505,17 @@ def box_elettronica():
 
 
 def coperchio_box():
-    x0, x1 = BOX_X; y0, y1 = BOX_Y; z0, z1 = BOX_Z
+    return _to_wall_b(_box_lid_local())
+
+
+def _box_lid_local():
+    x0, x1 = BOX_ALONG; y0, y1 = BOX_DEPTH; z0, z1 = BOX_Z
     W = 2.5
     lid = Manifold.cube([x1 - x0, 3.0, z1 - z0]).translate([x0, y1, z0])
     for x in (x0 + W + 4, x1 - W - 4):
         for z in (z0 + W + 4, z1 - W - 4):
             lid = lid - cyl_along((x, y1 - 1, z), (x, y1 + 4, z), 1.7, 24)
     return lid
-
-
-# ---------------------------------------------------------------------------
-# 11 COPRITUBO d'angolo (opzionale, dal pavimento al corpo) - 3 moduli
-# ---------------------------------------------------------------------------
-SEG_H = (Z_CORPO_BOT) / 3.0
-
-
-def copritubo(i):
-    z0 = i * SEG_H
-    z1 = z0 + SEG_H
-    ring = COLUMN.difference(CHASE)
-    m = prism(ring, z0, z1)
-    spig = disc((0, 0), R_CH - 0.4).difference(disc((0, 0), R_CH - 3.0)).intersection(Q)
-    spig = spig.difference(box(0, 0, 3, 1000)).difference(box(0, 0, 1000, 3))
-    collar = disc((0, 0), R_CH + 0.5).difference(disc((0, 0), R_CH - 3.0)).intersection(Q)
-    collar = collar.difference(box(0, 0, 3, 1000)).difference(box(0, 0, 1000, 3))
-    m = m + prism(collar, z1 - 6, z1) + prism(spig, z1 - 0.01, z1 + 8)
-    return m
 
 
 # ---------------------------------------------------------------------------
@@ -541,9 +534,6 @@ PARTS = [
     ("09_coperchio_serbatoio", coperchio_serbatoio, "grigio", "flip", 1),
     ("10_box_elettronica", box_elettronica, "antracite", ("rot", "x", 90), 1),
     ("11_coperchio_box", coperchio_box, "antracite", ("rot", "x", 90), 1),
-    ("12_copritubo_A", lambda: copritubo(0), "sabbia", "up", 1),
-    ("13_copritubo_B", lambda: copritubo(1), "sabbia", "up", 1),
-    ("14_copritubo_C", lambda: copritubo(2), "sabbia", "up", 1),
 ]
 
 
@@ -603,15 +593,24 @@ if __name__ == "__main__":
 # Riferimenti non stampati (per verifiche e rendering)
 # ---------------------------------------------------------------------------
 def tubo_ppr():
-    """Percorso indicativo PPR DN20 + raccordi (gomito, gomito femmina 1/2", rompigetto)."""
+    """Percorso indicativo PPR DN20: esce dal muro (parete B) a Z_PIPE_IN, gomito in su,
+    salita nella colonnina, gomito a 90 deg, braccio, gomito 20 x 1/2" F verso il basso."""
+    w0 = (-30.0, PIPE_Y, Z_PIPE_IN)
+    wz = (*RISER, Z_PIPE_IN)
     rz = (*RISER, Z_ARM)
     sz = (*SPOUT, Z_ARM)
-    parts = [cyl(RISER, 10, 300, Z_ARM, 48),
+    u = np.array([1.0, 0.0])
+    parts = [cyl_along(w0, wz, 10, 48),                                   # uscita dal muro
+             Manifold.sphere(14.5, 48).translate(list(wz)),
+             cyl_along((RISER[0] - 16, PIPE_Y, Z_PIPE_IN), wz, 14.5, 48),  # gomito basso
+             cyl(RISER, 14.5, Z_PIPE_IN, Z_PIPE_IN + 16, 48),
+             cyl(RISER, 10, Z_PIPE_IN, Z_ARM, 48),
              Manifold.sphere(14.5, 48).translate(list(rz)),
+             cyl(RISER, 14.5, Z_ARM - 16, Z_ARM, 48),
+             cyl_along(rz, (RISER[0] + 16, PIPE_Y, Z_ARM), 14.5, 48),       # gomito alto
              cyl_along(rz, sz, 10, 48),
-             cyl_along(rz, (RISER[0] + 18, RISER[1] + 18, Z_ARM), 14.5, 48),
              Manifold.sphere(15.0, 48).translate(list(sz)),
-             cyl_along((SPOUT[0] - 16, SPOUT[1] - 16, Z_ARM), sz, 15, 48),
+             cyl_along((SPOUT[0] - 18, PIPE_Y, Z_ARM), sz, 15, 48),         # gomito femmina
              cyl(SPOUT, 15, Z_OUTLET + 4, Z_ARM, 48)]
     return union(parts)
 
@@ -626,7 +625,7 @@ def pompa():
     body = Manifold.cube([45, 40, 40], True).rotate([0, 0, TANK_PHI]).translate([c[0], c[1], TANK_Z0 + 3 + 20])
     o = tank_frame(TANK_U0, TANK_VOFF + 30)
     hose = cyl_along((c[0], c[1], TANK_Z0 + 43), (c[0], c[1], TANK_Z0 + TANK_H - 6), 5, 24) + \
-        cyl_along((c[0], c[1], TANK_Z0 + TANK_H - 12), (o[0], o[1], TANK_Z0 + TANK_H - 6), 5, 24)
+        cyl_along((c[0], c[1], TANK_Z0 + TANK_H - 6), (o[0], o[1], TANK_Z0 + TANK_H - 6), 5, 24)
     return body + hose
 
 

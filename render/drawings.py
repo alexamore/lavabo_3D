@@ -105,57 +105,54 @@ def add_geom(ax, g, **kw):
 # PIANTA
 # ---------------------------------------------------------------------------
 def pianta(ax):
-    from shapely.geometry import box
+    from shapely.geometry import LineString
     ax.set_aspect("equal")
-    hatch_rect(ax, -35, -35, 0, 290)
-    hatch_rect(ax, 0, -35, 330, 0)
-    ax.text(300, -18, "PARETE A", ha="right", va="center", fontsize=8, color=INK, fontweight="bold")
-    ax.text(-18, 270, "PARETE B", ha="center", va="top", rotation=90, fontsize=8, color=INK, fontweight="bold")
+    hatch_rect(ax, -35, -35, 0, 300)
+    hatch_rect(ax, 0, -35, 280, 0)
+    ax.text(250, -18, "PARETE A  (lato corto 20 cm)", ha="right", va="center", fontsize=8, color=INK, fontweight="bold")
+    ax.text(-18, 290, "PARETE B  (lato lungo 25 cm · fontana)", ha="center", va="top", rotation=90, fontsize=8,
+            color=INK, fontweight="bold")
     add_geom(ax, F.F, fc="#efe7d8", ec=INK, lw=1.6)
     add_geom(ax, F.F_IN, fc="none", ec="#9a8c74", lw=0.6, ls="--")
     add_geom(ax, F.bs_footprint(), fc=COL["sabbia"], ec=INK, lw=0.9)
-    add_geom(ax, F.CHASE, fc="#f7f3ec", ec=INK, lw=0.6, ls=":")
+    add_geom(ax, F.CHASE.intersection(F.Q), fc="#f7f3ec", ec=INK, lw=0.6, ls=":")
     add_geom(ax, F.I_BASIN, fc="#d9d4cb", ec=INK, lw=0.7)
-    # asole griglia (indicative)
-    for k in range(-24, 25):
-        e = np.array([1, 1]) / math.sqrt(2); n = np.array([1, -1]) / math.sqrt(2)
-        from shapely.geometry import LineString
-        ln = LineString([tuple(-400 * e + k * 9 * n), tuple(400 * e + k * 9 * n)]).intersection(F.I_BASIN.buffer(-8))
+    for k in range(0, 40):
+        ln = LineString([(-50, k * 9.0), (400, k * 9.0)]).intersection(F.I_BASIN.buffer(-8))
         for seg in getattr(ln, "geoms", [ln]):
             if not seg.is_empty:
                 xs, ys = seg.xy
                 ax.plot(xs, ys, color="#8f8a80", lw=0.5)
     ax.add_patch(Circle(F.DRAIN, F.DRAIN_D / 2, fc="white", ec=INK, lw=0.7, ls="--"))
-    ax.add_patch(Circle(F.SPOUT, F.SPOUT_R, fc="none", ec="#1f5fa8", lw=1.0, ls="--"))
     ax.add_patch(Circle(F.SPOUT, 44, fc="none", ec="#1f5fa8", lw=0.6, ls=":"))
     ax.add_patch(Circle(F.RISER, 10, fc=COL["tubo"], ec=INK, lw=0.6))
+    ax.add_patch(Rectangle((-35, F.PIPE_Y - 10), 35 + F.RISER[0], 20, fc=COL["tubo"], ec=INK, lw=0.6, alpha=.8))
     arm = F._stadium(F.ARM_P0, F.ARM_P1, F.ARM_R)
-    add_geom(ax, arm, fc="none", ec="#1f5fa8", lw=0.8, ls="--")
+    add_geom(ax, arm, fc="none", ec="#1f5fa8", lw=1.0, ls="--")
     # quote principali
-    dim_h(ax, 0, F.A, -60, "250", fs=11)
+    dim_h(ax, 0, F.A, -60, "200", fs=11)
     ax.plot([0, 0], [-35, -66], color=DIM, lw=0.5); ax.plot([F.A, F.A], [0, -66], color=DIM, lw=0.5)
-    dim_v(ax, -60, 0, F.B, "200", fs=11)
+    dim_v(ax, -60, 0, F.B, "250", fs=11)
     ax.plot([-35, -66], [0, 0], color=DIM, lw=0.5); ax.plot([0, -66], [F.B, F.B], color=DIM, lw=0.5)
-    dim_h(ax, 0, F.SPOUT[0], F.SPOUT[1] + 58, "95", fs=8)
-    dim_v(ax, F.SPOUT[0] + 58, 0, F.SPOUT[1], "95", fs=8, side="right")
-    dim_v(ax, 238, 0, F.T_W, "", fs=7, side="right")
-    ax.text(246, 10, "20", fontsize=7, color=DIM, va="center")
-    note(ax, (180, 120), (285, 175), "griglia removibile\n(piano bottiglia +83,6)")
-    note(ax, F.SPOUT, (150, 250), "asse beccuccio\n(bottiglia Ø 88)")
-    note(ax, F.RISER, (55, -110), "salita PPR DN20\nnel cavedio d'angolo")
-    note(ax, (160, 10), (190, -110), "ali schienale sp. 20 aderenti alle pareti")
-    note(ax, (238 * math.cos(0.5), 188 * math.sin(0.5)), (300, 70), "bordo frontale curvo\naffusolato")
-    ax.text(125, 315, "PIANTA  (scala 1:5)", ha="center", fontsize=12, fontweight="bold", color=INK)
-    ax.text(125, 300, "pianta a tre lati: 250 lungo parete A + 200 lungo parete B + bordo curvo", ha="center",
+    dim_v(ax, -85, 0, F.PIPE_Y, "95  asse tubo", fs=9)
+    ax.plot([-35, -91], [F.PIPE_Y, F.PIPE_Y], color=DIM, lw=0.5)
+    dim_h(ax, 0, F.SPOUT[0], F.PIPE_Y + 40, "100", fs=8)
+    note(ax, (150, 150), (230, 230), "griglia removibile\n(piano bottiglia +83,6)")
+    note(ax, F.SPOUT, (150, 30), "asse beccuccio\n(bottiglia Ø 88)")
+    note(ax, F.RISER, (60, 280), "tubo PPR che esce dal muro\n+ salita nella colonnina")
+    note(ax, (10, 200), (110, 300), "schienale sp. 20 sulla parete B")
+    note(ax, (150, 6), (190, -100), "alzatina sp. 12 sulla parete A")
+    ax.text(110, 355, "PIANTA  (scala 1:5)", ha="center", fontsize=12, fontweight="bold", color=INK)
+    ax.text(110, 340, "tre lati: 200 lungo parete A + 250 lungo parete B + bordo curvo", ha="center",
             fontsize=8.5, color="#5d574d")
-    ax.set_xlim(-90, 380); ax.set_ylim(-130, 325)
+    ax.set_xlim(-120, 330); ax.set_ylim(-120, 365)
     ax.axis("off")
 
 
 # ---------------------------------------------------------------------------
-# PROSPETTO frontale (proiezione lungo la bisettrice)
+# PROSPETTO frontale (vista della parete da 25 cm)
 # ---------------------------------------------------------------------------
-def project(meshes, view, hdir, exclude=(), light=(0.45, 0.25, 0.85), behind=False):
+def project(meshes, view, hdir, exclude=(), light=(0.45, 0.25, 0.85), behind=None):
     view = np.asarray(view, float); view /= np.linalg.norm(view)
     hdir = np.asarray(hdir, float); hdir /= np.linalg.norm(hdir)
     L = np.asarray(light, float); L /= np.linalg.norm(L)
@@ -166,8 +163,8 @@ def project(meshes, view, hdir, exclude=(), light=(0.45, 0.25, 0.85), behind=Fal
         tri = m.triangles
         n = m.face_normals
         vis = n @ view > 1e-3
-        if behind:
-            vis &= (m.triangles_center @ view) < 0
+        if behind is not None:
+            vis &= (m.triangles_center @ view) < behind
         tri = tri[vis]; n = n[vis]
         if not len(tri):
             continue
@@ -184,26 +181,33 @@ def project(meshes, view, hdir, exclude=(), light=(0.45, 0.25, 0.85), behind=Fal
 
 
 def prospetto(ax, meshes):
+    """Vista frontale della parete B (25 cm): l'angolo e' a sinistra."""
     ax.set_aspect("equal")
-    P, C = project(meshes, view=(1, 1, 0), hdir=(-1, 1, 0), exclude=("pompa", "galleggianti"))
+    P, C = project(meshes, view=(1, 0, 0), hdir=(0, 1, 0), exclude=("pompa", "galleggianti"))
     ax.add_collection(PolyCollection(P, facecolors=C, edgecolors=C, linewidths=0.15))
-    # pareti in vista (spigolo d'angolo in asse)
-    ax.plot([0, 0], [0, 1400], color="#7d6f58", lw=0.8)
-    ax.plot([-260, 260], [0, 0], color=INK, lw=1.4)
-    for k in range(-26, 26):
+    ax.add_patch(Rectangle((-30, 0), 30, 1300, fc="#e6dccb", ec=INK, lw=0.8, hatch="////"))
+    ax.text(-15, 1280, "parete A", rotation=90, ha="center", va="top", fontsize=7.5)
+    ax.plot([-40, 420], [0, 0], color=INK, lw=1.4)
+    for k in range(-4, 43):
         ax.plot([k * 10, k * 10 - 12], [0, -12], color=INK, lw=0.4)
     for z, t in ((0, "±0,00 pavimento"), (F.Z_CORPO_BOT, "+57,0 fondo vano"), (F.Z_TOP, "+84,0 piano vasca"),
+                 (F.Z_PIPE_IN, f"+{F.Z_PIPE_IN / 10:.1f} uscita tubo dal muro*".replace(".", ",")),
                  (F.Z_OUTLET, "+115,0 uscita beccuccio"), (F.Z_HEAD_TOP, "+121,8 sommità")):
-        level(ax, 120, 230, z, t)
-    dim_v(ax, 100, F.Z_GRID_TOP, F.Z_OUTLET, f"{F.Z_OUTLET - F.Z_GRID_TOP:.0f} luce utile", fs=8, side="right",
-          ext=[(F.Z_GRID_TOP, 60), (F.Z_OUTLET, 10)])
-    dim_v(ax, -245, 0, F.Z_TOP, "840", fs=9, ext=[(F.Z_TOP, -160)])
-    note(ax, (0, F.Z_OUTLET - 3), (-245, 1265), "beccuccio vicino all'angolo\n(asse a 95 mm da entrambe le pareti)", ha="left")
-    note(ax, (60, 880), (-245, 960), "schienale a onda\n(nasconde il tubo PPR)", ha="left")
-    note(ax, (-60, 650), (-245, 640), "sportello removibile\n(vano tecnico)", ha="left")
-    note(ax, (0, 300), (-245, 300), "copritubo d'angolo\n(opzionale, 3 moduli)", ha="left")
-    ax.text(0, 1330, "PROSPETTO FRONTALE  (vista lungo la bisettrice)", ha="center", fontsize=12, fontweight="bold")
-    ax.set_xlim(-260, 330); ax.set_ylim(-30, 1360)
+        level(ax, 270, 330, z, t)
+    dim_h(ax, 0, F.PIPE_Y, F.Z_HEAD_TOP + 40, "95", fs=10)
+    ax.plot([F.PIPE_Y, F.PIPE_Y], [F.Z_OUTLET - 20, F.Z_HEAD_TOP + 46], color=DIM, lw=0.6, ls="-.")
+    dim_h(ax, 0, F.B, 520, "250", fs=10)
+    ax.plot([F.B, F.B], [520, F.Z_CORPO_BOT], color=DIM, lw=0.5)
+    dim_v(ax, 200, F.Z_GRID_TOP, F.Z_OUTLET, f"{F.Z_OUTLET - F.Z_GRID_TOP:.0f} luce utile", fs=8, side="right",
+          ext=[(F.Z_OUTLET, F.PIPE_Y + 25)])
+    dim_v(ax, -60, 0, F.Z_TOP, "840", fs=9, ext=[(F.Z_TOP, 0)])
+    note(ax, (F.PIPE_Y, F.Z_OUTLET - 3), (130, 1290), "beccuccio in asse al tubo,\na 95 mm dall'angolo", ha="left")
+    note(ax, (170, 900), (330, 960), "schienale a onda sulla parete da 25 cm\n(nasconde il tubo PPR)", ha="left")
+    note(ax, (150, 650), (330, 650), "sportello removibile (vano tecnico)", ha="left")
+    ax.text(170, 1360, "PROSPETTO  (vista frontale della parete da 25 cm)", ha="center", fontsize=12, fontweight="bold")
+    ax.text(170, 30, "* quota di uscita del tubo dal muro da verificare in opera", ha="center", fontsize=8,
+            color="#5d574d")
+    ax.set_xlim(-90, 560); ax.set_ylim(-30, 1390)
     ax.axis("off")
 
 
@@ -211,9 +215,8 @@ def prospetto(ax, meshes):
 # SEZIONE sul piano verticale x = y
 # ---------------------------------------------------------------------------
 def section_paths(name):
-    """Sezione esatta con il piano x = y (manifold3d.slice) -> lista di anelli (u, z)."""
-    r = 1 / math.sqrt(2)
-    M = [[r, r, 0, 0], [0, 0, 1, 0], [r, -r, 0, 0]]  # x'=u, y'=z, z'=distanza dal piano
+    """Sezione esatta con il piano verticale y = PIPE_Y (asse del tubo) -> anelli (x, z)."""
+    M = [[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, -F.PIPE_Y]]  # x'=x, y'=z, z'=distanza dal piano
     cs = MANI[name].transform(M).slice(0.0)
     return [np.asarray(p) for p in cs.to_polygons()]
 
@@ -236,31 +239,31 @@ def draw_section(ax, meshes):
 
 def sezione(ax, meshes):
     ax.set_aspect("equal")
-    # sagome in vista oltre il piano (proiezione tenue)
-    P, C = project([mm for mm in meshes if mm[0] not in ("tubo",)], view=(1, -1, 0), hdir=(1, 1, 0), behind=True)
-    ax.add_collection(PolyCollection(P, facecolors=np.clip(C * 0.25 + 0.75, 0, 1), edgecolors="none", alpha=1))
+    P, C = project([mm for mm in meshes if mm[0] not in ("tubo",)], view=(0, -1, 0), hdir=(1, 0, 0),
+                   behind=-F.PIPE_Y)
+    ax.add_collection(PolyCollection(P, facecolors=np.clip(C * 0.25 + 0.75, 0, 1), edgecolors="none"))
     draw_section(ax, meshes)
-    # tubo PPR: sempre in evidenza
     ax.add_patch(Rectangle((-40, 0), 40, 1320, fc="#e6dccb", ec=INK, lw=0.8, hatch="////"))
-    ax.text(-20, 1280, "angolo\npareti", ha="center", fontsize=7.5, rotation=90, va="top")
+    ax.text(-20, 1280, "parete B (25 cm)", ha="center", fontsize=7.5, rotation=90, va="top")
     ax.plot([-60, 330], [0, 0], color=INK, lw=1.4)
-    u_sp = math.hypot(*F.SPOUT)
     for z, t in ((F.Z_TOP, "+84,0"), (F.Z_OUTLET, "+115,0"), (F.Z_VASCA_BOT, "+77,0"), (F.Z_CORPO_BOT, "+57,0"),
                  (F.Z_BS_TOP, "+104,0")):
         level(ax, 240, 290, z, t)
-    note(ax, (math.hypot(*F.RISER), 980), (380, 1000), "tubo PPR DN20 in salita\n(cavedio aperto verso le pareti)")
-    note(ax, (math.hypot(*F.RISER) + 30, F.Z_ARM), (380, 1300), "gomito PPR 90°, braccio\norizzontale nel beccuccio")
-    note(ax, (u_sp, F.Z_OUTLET - 2), (380, 1190), "gomito PPR 20 × ½\" F\n+ rompigetto (filetto femmina)")
-    note(ax, (110, F.Z_GRID_TOP - 4), (380, 880), "griglia removibile sp. 8")
-    note(ax, (F.DRAIN[0] * math.sqrt(2) + 30, 800), (380, 815), "imbuto inclinato 12° → scarico Ø28")
-    note(ax, (170, 650), (380, 690), "serbatoio estraibile ~1,4 L")
-    note(ax, (125, 600), (380, 620), "pompa sommersa 12 V")
-    note(ax, (110, 660), (380, 655), "galleggianti livello alto/basso")
-    note(ax, (60, 740), (380, 745), "box ESP32 stagno (dietro, in quota)")
-    note(ax, (35, 330), (380, 330), "copritubo: passaggio tubo PPR,\nmandata pompa e cavo 12 V")
-    note(ax, (190, 600), (380, 580), "sportello con feritoie di ventilazione")
-    ax.text(150, 1350, "SEZIONE VERTICALE SULLA BISETTRICE", ha="center", fontsize=12, fontweight="bold")
-    ax.set_xlim(-60, 600); ax.set_ylim(-20, 1380)
+    sx = F.SPOUT[0]
+    note(ax, (-15, F.Z_PIPE_IN), (380, 930), "tubo PPR che esce dal muro\n(quota da verificare)")
+    note(ax, (F.RISER[0], 1000), (380, 1010), "salita PPR DN20 nella colonnina\n(cavedio aperto verso il muro)")
+    note(ax, (F.RISER[0] + 30, F.Z_ARM), (380, 1300), "gomito PPR 90°, braccio\norizzontale nel beccuccio")
+    note(ax, (sx, F.Z_OUTLET - 2), (380, 1190), "gomito PPR 20 × ½\" F\n+ rompigetto (filetto femmina)")
+    note(ax, (140, F.Z_GRID_TOP - 4), (380, 870), "griglia removibile sp. 8")
+    note(ax, (sx + 25, 800), (380, 815), "imbuto inclinato 12° → scarico Ø28")
+    note(ax, (150, 650), (380, 700), "serbatoio estraibile ~1,6 L")
+    note(ax, (120, 600), (380, 620), "pompa sommersa 12 V")
+    note(ax, (110, 670), (380, 660), "galleggianti livello alto/basso")
+    note(ax, (30, 740), (380, 745), "box ESP32 stagno (sulla parete B, in quota)")
+    note(ax, (175, 600), (380, 580), "sportello con feritoie di ventilazione")
+    ax.text(170, 1360, "SEZIONE VERTICALE SULL'ASSE DEL TUBO (95 mm dall'angolo)", ha="center", fontsize=12,
+            fontweight="bold")
+    ax.set_xlim(-60, 620); ax.set_ylim(520, 1380)
     ax.axis("off")
 
 
@@ -268,23 +271,23 @@ def dettaglio(ax, meshes):
     ax.set_aspect("equal")
     sub = [mm for mm in meshes if mm[0] in ("03_schienale", "04_testa_beccuccio", "05_copertura_braccio", "tubo",
                                              "rompigetto", "02_griglia", "01_vasca")]
-    P, C = project([mm for mm in sub if mm[0] not in ("tubo",)], view=(1, -1, 0), hdir=(1, 1, 0), behind=True)
+    P, C = project([mm for mm in sub if mm[0] not in ("tubo",)], view=(0, -1, 0), hdir=(1, 0, 0), behind=-F.PIPE_Y)
     ax.add_collection(PolyCollection(P, facecolors=np.clip(C * 0.25 + 0.75, 0, 1), edgecolors="none"))
     draw_section(ax, sub)
     ax.add_patch(Rectangle((-15, 1000), 15, 260, fc="#e6dccb", ec=INK, lw=0.8, hatch="////"))
-    u_sp = math.hypot(*F.SPOUT)
-    note(ax, (u_sp, F.Z_OUTLET - 4), (200, 1105), "uscita: rompigetto M24 / anticalcare\nsu raccordo femmina ½\"")
-    note(ax, (u_sp + 12, F.Z_ARM - 25), (200, 1150), "canna di uscita Ø46, int. Ø39")
-    note(ax, (u_sp - 20, F.Z_ARM), (200, 1195), "gomito PPR 20 × ½\" F (femmina)")
-    note(ax, (math.hypot(*F.RISER), F.Z_ARM), (200, 1245), "gomito PPR 20 a 90°")
-    note(ax, (85, F.Z_ARM - 14), (200, 1065), "listello di chiusura sotto il braccio\n(2 viti M3, trattiene la testa)")
-    note(ax, (62, F.Z_BS_TOP), (200, 1025), "giunto testa/schienale: 2 perni Ø4 inox")
-    note(ax, (math.hypot(*F.RISER), 1010), (-5, 990), "PPR DN20", ha="right")
+    sx = F.SPOUT[0]
+    note(ax, (sx, F.Z_OUTLET - 4), (200, 1105), "uscita: rompigetto M24 / anticalcare\nsu raccordo femmina ½\"")
+    note(ax, (sx + 12, F.Z_ARM - 25), (200, 1150), "canna di uscita Ø46, int. Ø39")
+    note(ax, (sx - 12, F.Z_ARM), (200, 1195), "gomito PPR 20 × ½\" F (femmina)")
+    note(ax, (F.RISER[0], F.Z_ARM), (200, 1245), "gomito PPR 20 a 90°")
+    note(ax, (65, F.Z_ARM - 14), (200, 1065), "listello di chiusura sotto il braccio\n(2 viti M3, trattiene la testa)")
+    note(ax, (45, F.Z_BS_TOP), (200, 1025), "giunto testa/schienale: 2 perni Ø4 inox")
+    note(ax, (F.RISER[0], 1010), (-5, 990), "PPR DN20", ha="right")
     ax.text(110, 1275, "DETTAGLIO BECCUCCIO", ha="center", fontsize=12, fontweight="bold")
     ax.text(110, 1262, "testa stampata capovolta (piano superiore sul piatto) → nessun supporto",
             ha="center", fontsize=8, color="#5d574d")
-    dim_v(ax, u_sp + 40, F.Z_OUTLET, F.Z_HEAD_TOP, f"{F.Z_HEAD_TOP - F.Z_OUTLET:.0f}", fs=8, side="right")
-    dim_h(ax, 0, u_sp, F.Z_HEAD_TOP + 12, f"{u_sp:.0f} dall'angolo", fs=8)
+    dim_v(ax, sx + 40, F.Z_OUTLET, F.Z_HEAD_TOP, f"{F.Z_HEAD_TOP - F.Z_OUTLET:.0f}", fs=8, side="right")
+    dim_h(ax, 0, sx, F.Z_HEAD_TOP + 12, f"{sx:.0f} dal muro", fs=8)
     ax.set_xlim(-60, 400); ax.set_ylim(990, 1290)
     ax.axis("off")
 

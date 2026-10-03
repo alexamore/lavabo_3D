@@ -27,7 +27,7 @@
 <body>
 <canvas id="c"></canvas>
 <div class="ui" id="ui"></div>
-<div class="info"><h1>Fontanella d'angolo &middot; 25 &times; 20 cm</h1>
+<div class="info"><h1>Fontanella d'angolo &middot; 25 × 20 cm</h1>
 <p>Pianta a tre lati, ASA stampato su Bambu Lab P2S, tutti i pezzi entro 250 mm. Trascina per ruotare, rotella per zoom.</p></div>
 <div class="legend" id="legend"></div>
 <script id="geo" type="application/json">__DATA__</script>
@@ -157,15 +157,15 @@ controls.enableDamping = true;
 function toThree(x, y, z) { return new THREE.Vector3(x, z, -y); }
 
 const VIEWS = {
-  ambient: { label: 'Vista ambientata', pos: [1250, 1050, 1420], tgt: [110, 95, 930], fov: 30 },
-  front: { label: 'Fronte', pos: [1650, 1650, 980], tgt: [95, 95, 920], fov: 18 },
-  spout: { label: 'Beccuccio', pos: [420, 330, 1100], tgt: [70, 70, 1140], fov: 30, section: false },
-  section: { label: 'Sezione', pos: [1100, -900, 1050], tgt: [80, 80, 900], fov: 32, section: true },
-  exploded: { label: 'Esploso', pos: [2500, 1800, 1700], tgt: [120, 120, 900], fov: 38, explode: true },
-  top: { label: 'Pianta', ortho: true, pos: [125, 100, 3000], tgt: [125, 100, 0], half: 175 },
+  ambient: { label: 'Vista ambientata', pos: [1350, 420, 1420], tgt: [80, 120, 940], fov: 30 },
+  front: { label: 'Fronte', pos: [2300, 125, 980], tgt: [0, 125, 920], fov: 16 },
+  spout: { label: 'Beccuccio', pos: [480, -10, 1120], tgt: [55, 95, 1130], fov: 30, section: false },
+  section: { label: 'Sezione', pos: [700, -1200, 1000], tgt: [90, 95, 930], fov: 30, section: true },
+  exploded: { label: 'Esploso', pos: [2700, 1300, 1750], tgt: [100, 125, 990], fov: 36, explode: true },
+  top: { label: 'Pianta', ortho: true, pos: [100, 125, 3000], tgt: [100, 125, 0], half: 175 },
 };
 let explodeT = 0, explodeGoal = 0, sectionOn = false;
-const clip = new THREE.Plane(new THREE.Vector3(-1, 0, -1).normalize(), 0); // piano x=y in coordinate three (x, z=-y)
+const clip = new THREE.Plane(new THREE.Vector3(0, 0, -1), -95); // piano y = 95 (asse del tubo): resta la parte y > 95
 function setView(k) {
   const v = VIEWS[k];
   document.querySelectorAll('.ui button').forEach(b => b.classList.toggle('on', b.dataset.k === k));

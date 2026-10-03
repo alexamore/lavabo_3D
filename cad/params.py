@@ -2,15 +2,17 @@
 
 Sistema di riferimento (assemblato):
   origine  = spigolo interno delle due pareti, a livello del pavimento
-  asse X   = lungo la PARETE A (lato da 25 cm)  -> la parete A e' il piano y = 0
-  asse Y   = lungo la PARETE B (lato da 20 cm)  -> la parete B e' il piano x = 0
+  asse X   = lungo la PARETE A (lato corto, 20 cm)              -> parete A = piano y = 0
+  asse Y   = lungo la PARETE B (lato lungo, 25 cm, la FONTANA)  -> parete B = piano x = 0
   asse Z   = verticale, z = 0 pavimento
+Guardando la parete B (quella da 25 cm) l'angolo e' a sinistra: il tubo esce dal muro
+a PIPE_Y = 95 mm dall'angolo.
 """
 import math
 
 # --- Pianta a tre lati -------------------------------------------------------
-A = 250.0          # lato lungo la parete A (parte dall'angolo)
-B = 200.0          # lato lungo la parete B (parte dall'angolo)
+A = 200.0          # lato lungo la parete A (corta), parte dall'angolo
+B = 250.0          # lato lungo la parete B (lunga, dove si fissa la fontana), parte dall'angolo
 ARC_N = 2.0        # esponente super-ellisse del bordo frontale (2 = quarto d'ellisse)
 ARC_PTS = 240      # risoluzione del bordo curvo
 
@@ -25,19 +27,23 @@ Z_OUTLET = 1150.0  # uscita beccuccio (faccia inferiore): 31 cm liberi sopra la 
 Z_ARM = Z_OUTLET + 40.0      # asse del braccio orizzontale del beccuccio
 Z_HEAD_TOP = Z_ARM + 28.0    # sommita' piatta della testa
 
-# --- Schienale / colonna d'angolo -------------------------------------------
-T_W = 20.0         # spessore delle ali dello schienale (aderenti alle pareti)
-R_C = 65.0         # raggio esterno colonna d'angolo (quarto di cilindro)
-R_CH = 58.0        # raggio del vano tecnico (cavedio) per il tubo PPR
-BS_TAIL_H = 30.0   # altezza ali all'estremita' (sopra il bordo vasca)
+# --- Schienale sulla parete lunga (B) + alzatina sulla parete corta (A) ------
+T_W = 20.0         # spessore schienale sulla parete B
+T_S = 12.0         # spessore alzatina paraspruzzi sulla parete A
+UPSTAND_H = 40.0   # altezza alzatina sopra il bordo vasca
+BS_TAIL_H = 30.0   # altezza schienale all'estremita' lontana dall'angolo
 
-# --- Tubo PPR ----------------------------------------------------------------
-RISER = (24.0, 24.0)   # asse della salita verticale PPR DN20
-SPOUT = (95.0, 95.0)   # asse del beccuccio (bottiglia centrata qui)
-ARM_R = 23.0           # raggio esterno braccio
-SPOUT_R = 23.0         # raggio esterno canna di uscita (= braccio: estremita' continua)
-CH_W = 19.0            # semi-larghezza canale interno
-SPOUT_RI = 19.5        # raggio interno canna di uscita
+# --- Tubo PPR: esce gia' dal muro (parete B) nella zona del lavabo -----------
+PIPE_Y = 95.0           # centro del tubo dall'angolo, lungo la parete B
+Z_PIPE_IN = 900.0       # quota di uscita del tubo dal muro (DA VERIFICARE in opera; 855..1130)
+RISER = (22.0, PIPE_Y)  # asse della salita verticale nella colonnina dello schienale
+SPOUT = (100.0, PIPE_Y) # asse del beccuccio (bottiglia centrata qui)
+COL_HW = 26.0           # semi-larghezza colonnina (esterno)
+CH_HW = 19.5            # semi-larghezza cavedio interno (aperto verso il muro)
+ARM_R = 23.0            # raggio esterno braccio
+SPOUT_R = 23.0          # raggio esterno canna di uscita (= braccio: estremita' continua)
+CH_W = 19.0             # semi-larghezza canale interno
+SPOUT_RI = 19.5         # raggio interno canna di uscita
 
 # --- Vasca -------------------------------------------------------------------
 RIM_W = 14.0       # larghezza bordo frontale
@@ -57,17 +63,17 @@ Z_DOOR_BOT = 580.0
 LIP_H = 6.0
 
 # --- Serbatoio (in coordinate u/v ruotate di TANK_PHI) ----------------------
-TANK_PHI = 50.0
-TANK_U0 = 74.0
-TANK_L = 104.0
-TANK_W = 124.0
-TANK_VOFF = -12.0
+TANK_PHI = 30.0
+TANK_U0 = 76.0
+TANK_L = 102.0
+TANK_W = 156.0
+TANK_VOFF = 40.0
 TANK_Z0 = 578.0
 TANK_H = 113.0
 
-# --- Box elettronica (stagno) -----------------------------------------------
-BOX_X = (110.0, 210.0)
-BOX_Y = (WALL, 53.0)
+# --- Box elettronica (stagno), appeso alla parete B dentro il vano ----------
+BOX_ALONG = (115.0, 205.0)   # tratto di parete B occupato (y)
+BOX_DEPTH = (WALL, 53.0)     # sporgenza dalla parete (x)
 BOX_Z = (710.0, 762.0)
 
 # --- Viteria ----------------------------------------------------------------
@@ -77,7 +83,3 @@ MAG_D = 6.3        # magnete 6x3
 MAG_H = 3.2
 
 MAX_PRINT = 250.0
-
-def ellipse_r(theta_deg, a=A, b=B):
-    t = math.radians(theta_deg)
-    return 1.0 / math.sqrt((math.cos(t) / a) ** 2 + (math.sin(t) / b) ** 2)

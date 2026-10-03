@@ -22,22 +22,21 @@ CDN = "https://cdn.jsdelivr.net/npm/three@0.160.0"
 
 LABELS = {
     "01_vasca": "Vasca", "02_griglia": "Griglia", "03_schienale": "Schienale",
-    "04_testa_beccuccio": "Testa + beccuccio", "05_copertura_braccio": "Listello antracite",
+    "04_testa_beccuccio": "Testa + beccuccio", "05_copertura_braccio": "Listello di chiusura",
     "06_corpo_vano": "Corpo vano tecnico", "07_sportello": "Sportello", "08_serbatoio": "Serbatoio",
     "09_coperchio_serbatoio": "Coperchio serbatoio", "10_box_elettronica": "Box elettronica",
-    "11_coperchio_box": "Coperchio box", "12_copritubo_A": "Copritubo 1", "13_copritubo_B": "Copritubo 2",
-    "14_copritubo_C": "Copritubo 3",
+    "11_coperchio_box": "Coperchio box",
 }
 c50, s50 = math.cos(math.radians(F.TANK_PHI)), math.sin(math.radians(F.TANK_PHI))
+dc, ds = math.cos(math.radians(47)), math.sin(math.radians(47))
 EXPLODE = {
     "01_vasca": [0, 0, 120], "02_griglia": [0, 0, 220], "03_schienale": [0, 0, 280],
-    "04_testa_beccuccio": [0, 0, 400], "05_copertura_braccio": [120, 120, 330],
-    "06_corpo_vano": [0, 0, 0], "07_sportello": [330, 330, 40],
-    "08_serbatoio": [c50 * 200, s50 * 200, -150], "09_coperchio_serbatoio": [c50 * 200, s50 * 200, -60],
-    "10_box_elettronica": [0, 330, 40], "11_coperchio_box": [0, 400, 40],
-    "12_copritubo_A": [0, 0, -180], "13_copritubo_B": [0, 0, -120], "14_copritubo_C": [0, 0, -60],
+    "04_testa_beccuccio": [0, 0, 400], "05_copertura_braccio": [110, 0, 330],
+    "06_corpo_vano": [0, 0, 0], "07_sportello": [dc * 330, ds * 330, 40],
+    "08_serbatoio": [c50 * 220, s50 * 220, -150], "09_coperchio_serbatoio": [c50 * 220, s50 * 220, -60],
+    "10_box_elettronica": [300, 0, 40], "11_coperchio_box": [370, 0, 40],
     "tubo": [0, 0, 0], "rompigetto": [0, 0, 0],
-    "pompa": [c50 * 200, s50 * 200, -150], "galleggianti": [c50 * 200, s50 * 200, -60],
+    "pompa": [c50 * 220, s50 * 220, -150], "galleggianti": [c50 * 220, s50 * 220, -60],
 }
 
 
