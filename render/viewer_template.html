@@ -27,8 +27,8 @@
 <body>
 <canvas id="c"></canvas>
 <div class="ui" id="ui"></div>
-<div class="info"><h1>Fontanella d'angolo &middot; 25 × 20 cm</h1>
-<p>Pianta a tre lati, ASA stampato su Bambu Lab P2S, tutti i pezzi entro 250 mm. Trascina per ruotare, rotella per zoom.</p></div>
+<div class="info"><h1 id="ttl">Fontanella d'angolo &middot; 25 × 20 cm</h1>
+<p id="sub">Pianta a tre lati, ASA stampato su Bambu Lab P2S, tutti i pezzi entro 250 mm. Trascina per ruotare, rotella per zoom.</p></div>
 <div class="legend" id="legend"></div>
 <script id="geo" type="application/json">__DATA__</script>
 <script type="module">
@@ -37,10 +37,12 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 const DATA = JSON.parse(document.getElementById('geo').textContent);
+if (DATA.title) { document.getElementById('ttl').textContent = DATA.title; document.title = DATA.title; }
+if (DATA.subtitle) document.getElementById('sub').textContent = DATA.subtitle;
 const params = new URLSearchParams(location.search);
 if (params.get('shot')) document.body.classList.add('shot');
 
-const COLORS = { sabbia: 0xcbbca3, antracite: 0x3b3c3e, grigio: 0x9a9a96, tubo: 0x3f9a4a, ottone: 0xb8955a, vetro: 0xcfe6f2 };
+const COLORS = { cromo: 0xd8dbde, blu: 0x2a3f9a, sabbia: 0xcbbca3, antracite: 0x3b3c3e, grigio: 0x9a9a96, tubo: 0x3f9a4a, ottone: 0xb8955a, vetro: 0xcfe6f2 };
 const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(params.get('shot') ? 1 : Math.min(devicePixelRatio, 2));
@@ -136,7 +138,7 @@ for (const p of DATA.parts) {
   g.setIndex(new THREE.BufferAttribute(b64(p.i, Uint32Array), 1));
   const ng = g.toNonIndexed(); ng.computeVertexNormals();
   const col = COLORS[p.color] ?? 0xcccccc;
-  const mat = new THREE.MeshStandardMaterial({ color: col, roughness: p.color === 'antracite' ? .55 : .72, metalness: p.color === 'ottone' ? .8 : 0,
+  const mat = new THREE.MeshStandardMaterial({ color: col, roughness: p.color === 'antracite' ? .55 : .72, metalness: p.color === 'ottone' || p.color === 'cromo' ? .85 : 0,
     transparent: p.color === 'vetro', opacity: p.color === 'vetro' ? .32 : 1, side: THREE.DoubleSide, depthWrite: p.color !== 'vetro' });
   const mesh = new THREE.Mesh(ng, mat); mesh.castShadow = p.color !== 'vetro'; mesh.receiveShadow = true;
   mesh.userData = p; world.add(mesh); parts[p.name] = mesh;
@@ -156,7 +158,7 @@ const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
 function toThree(x, y, z) { return new THREE.Vector3(x, z, -y); }
 
-const VIEWS = {
+const VIEWS = DATA.views || {
   ambient: { label: 'Vista ambientata', pos: [1350, 420, 1420], tgt: [80, 120, 940], fov: 30 },
   front: { label: 'Fronte', pos: [2300, 125, 980], tgt: [0, 125, 920], fov: 16 },
   spout: { label: 'Beccuccio', pos: [480, -10, 1120], tgt: [55, 95, 1130], fov: 30, section: false },

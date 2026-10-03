@@ -148,6 +148,37 @@ Il firmware (`firmware/fontanella_esp32/fontanella_esp32.ino`, Arduino IDE) funz
 Con un solo galleggiante imposta `UN_SOLO_GALLEGGIANTE = true`: la pompa gira a tempo.
 La logica è stata provata con una simulazione su PC. Sulla scheda reale va verificato il verso dei galleggianti (`CONTATTO_CHIUSO_CON_ACQUA`).
 
+## Copertura provvisoria del rubinetto esistente
+
+Finché non si monta la fontanella, sul rubinetto doppio già installato va un cappuccio
+in ASA. Il rubinetto sporge 175 mm dalla parete da 25 cm, con l'asse a 95 mm dall'angolo.
+
+![Copertura rubinetto](docs/img/copertura/ambient.png)
+
+| # | Pezzo | Ingombro di stampa (mm) | Orientamento |
+|---|---|---|---|
+| 20 | Guscio (`stl/print/20_copertura_rubinetto.stl`) | 120 × 62 × 144 | faccia frontale sul piatto, nessun supporto |
+| 21 | Fondo a scatto (`stl/print/21_fondo_copertura.stl`) | 80 × 58 × 11 | piatto |
+
+- **Cosa copre:** gomito in ottone, comando superiore e prima uscita, fino a 143,5 mm dal muro.
+- **Comando frontale:** da 145 a 175 mm resta fuori dal guscio, libero da ruotare.
+- **Apertura per la bottiglia:** sul fondo, da 114 mm fino al fronte, larga 32 mm. La bottiglia si infila direttamente sull'uscita usata, a circa 128 mm dal muro.
+- **Montaggio senza forare il muro:**
+  1. Cala il guscio **dall'alto**: la feritoia frontale (26 mm) si appoggia sul corpo cromato.
+  2. Spingi il fondo **da sotto** finché i 4 dentini scattano nei fori dei fianchi.
+  3. Il fondo resta 2 mm sotto le punte delle uscite, quindi il guscio non si può più sfilare.
+  4. Per smontare, premi i dentini dai fori laterali.
+- **Tubo:** gomito, raccordo e tubo isolato escono dal fondo aperto della parte posteriore. I fianchi posteriori più lunghi li nascondono.
+- **Misure stimate dalle foto:** prima di stampare verifica in `cad/copertura_rubinetto.py` (dizionario `TAP`):
+  - altezza del comando superiore (stimata 58 mm sopra l'asse);
+  - posizione delle uscite (stimate a 88 e 128 mm dal muro);
+  - lunghezza delle uscite (stimata 18 mm).
+- **Tavola quotata:** [`docs/tavola_copertura_rubinetto.pdf`](docs/tavola_copertura_rubinetto.pdf). **Viewer 3D:** [`docs/copertura_viewer.html`](docs/copertura_viewer.html).
+
+```bash
+python3 cad/copertura_rubinetto.py && python3 render/build_copertura.py && python3 render/drawings_copertura.py
+```
+
 ## 6. Rigenerare e personalizzare
 
 ```bash
